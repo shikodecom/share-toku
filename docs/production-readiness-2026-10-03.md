@@ -31,6 +31,6 @@ cron登録は、cron daemonの実行成功・3commandの正常終了・失敗通
 4. singleログ、Webアクセスログ、日次集計・監査・backupの保存期間を決め、#27のprivacy記載と一致させる。
 5. 運営者Workspaceを設定し、公開承認まで運営者枠OFFを維持する。検証環境のsession/key rotation・rollbackと実WP再接続の証跡を揃える。
 
-読み取り確認用スクリプト: `tests/manual/production-readiness.php`。release rootは`SHARETOKU_RELEASE_ROOT`で指定可能。SSH先でstdinからPHPを実行し、結果を保存する。Laravelをbootstrapし、そのプロセスのcacheのみarrayにして` schedule:list `でコマンド登録を初期化する。DB書き込みの定期コマンドを実行せず、秘密値とbackup内容を出力しない。
+読み取り確認用スクリプト: `tests/manual/production-readiness.php`。release rootは`SHARETOKU_RELEASE_ROOT`での明示指定が必須。未指定または空ならstderrにエラーを出し、Laravelをbootstrapする前にexit 2で終了する。SSH先でstdinからPHPを実行し、結果を保存する。Laravelをbootstrapし、そのプロセスのcacheのみarrayにして` schedule:list `でコマンド登録を初期化する。DB書き込みの定期コマンドを実行せず、秘密値とbackup内容を出力しない。手動検証スクリプト5本の構文チェックはCIでも実行する。
 
 本番運用Gateは未完了。#28と#15をOPENに保つ。

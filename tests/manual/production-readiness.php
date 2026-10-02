@@ -5,7 +5,11 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 
-$root = getenv('SHARETOKU_RELEASE_ROOT') ?: '/home/f-taniguchi/www/shikode/share-toku';
+$root = getenv('SHARETOKU_RELEASE_ROOT');
+if (! $root) {
+    fwrite(STDERR, "SHARETOKU_RELEASE_ROOT is required\n");
+    exit(2);
+}
 require $root.'/current/vendor/autoload.php';
 $app = require $root.'/current/bootstrap/app.php';
 $kernel = $app->make(Kernel::class);

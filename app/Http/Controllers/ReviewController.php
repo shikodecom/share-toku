@@ -23,6 +23,10 @@ class ReviewController extends Controller
             throw ValidationException::withMessages(['status' => 'Invalid transition.']);
         }
 
+        if (! $o->program || ! $o->program->service) {
+            throw ValidationException::withMessages(['program' => 'Program is unavailable.']);
+        }
+
         return DB::transaction(function () use ($o, $request, $w, $audit) {
             $snapshot = ['offer' => $o->only(['public_id', 'referral_program_id', 'referral_code', 'referral_url', 'starts_at', 'ends_at', 'invitee_benefit_override', 'conditions_override']),
                 'program' => $o->program->only(['public_listing_policy', 'external_distribution_policy', 'policy_notes', 'policy_checked_at'])];

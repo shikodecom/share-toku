@@ -4,7 +4,7 @@
 
 ShareToku は、紹介コード・紹介URL・紹介特典を一元管理し、自分のWebサイトやWordPressへ配信できる紹介特典SaaSです。
 
-本番公開予定URL：<https://share-toku.shikode.com>
+本番配信先URL（一般公開は未承認）：<https://share-toku.shikode.com>
 
 紹介プログラムを利用する人は、自分が保有している紹介コードや紹介URLを登録できます。  
 WordPressプラグインを利用すると、登録した紹介特典をブログやWebサイトの記事内へ簡単に表示できます。
@@ -83,7 +83,7 @@ PROプランでは運営者枠を非表示にします。決済連携は未実�
 専用プラグインからShareTokuへ接続します。
 
 ```text
-[sharetoku offer="example-service"]
+[sharetoku offer="OFFER_PUBLIC_ID"]
 ```
 
 記事内に紹介特典カードを表示します。Gutenbergの動的ブロックにも対応します。
@@ -98,7 +98,7 @@ FREEプランでは、本人の紹介特典に関連するShareToku運営者の�
 
 ### ShareToku SaaS
 
-予定：
+実装：
 
 - Laravel
 - MySQL
@@ -251,7 +251,7 @@ MVPでは以下を実装します。
 
 ## Status
 
-🚧 **MVP 実装中。一般公開は未承認です。** 公開判定の残作業は [release checklist](docs/release-checklist.md) を参照してください。
+🚧 **MVP 実装中。一般公開は未承認です。** 本番配信済みですが、公開ポータルと公開前検証は未完了です。Issue・PRとソースの対応は [実装対応表](docs/implementation-status.md) を参照してください。 公開判定の残作業は [release checklist](docs/release-checklist.md) を参照してください。
 
 ## ローカル起動
 

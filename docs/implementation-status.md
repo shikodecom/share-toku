@@ -7,7 +7,7 @@ Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` 
 | Issue | 実装の根拠 | 自動検証の根拠 | 残作業 / 状態 |
 | --- | --- | --- | --- |
 | [#1 基盤](https://github.com/shikodecom/share-toku/issues/1) | `composer.json`, `.github/workflows/ci.yml`, `/health`, `docs/architecture.md` | `ShareTokuFlowTest`, remote CI の MySQL migrate/rollback/re-migrate | 基盤実装・CI済み。新規 clone からの手順再現の受け入れ記録が必要 |
-| [#2 認証・Workspace](https://github.com/shikodecom/share-toku/issues/2) | `AuthController`, `WorkspaceController`, `WorkspaceAccess`, `WorkspaceRole` | `GoogleAuthenticationTest` Google OAuth・失敗・ログアウト、`ShareTokuFlowTest` Workspace 越境 | #19でGoogle OAuth専用へ置換。本番Googleログイン・ロール別・削除 Workspace の検証は別途 |
+| [#2 認証・Workspace](https://github.com/shikodecom/share-toku/issues/2) | `AuthController`, `WorkspaceController`, `WorkspaceAccess`, `WorkspaceRole` | `GoogleAuthenticationTest` Google OAuth・失敗・ログアウト、`ShareTokuFlowTest` Workspace 越境 | #19でGoogle OAuth専用へ置換。本番Google初回・logout・再ログイン・重複なし確認済み。ロール別・削除 Workspace の検証は別途 |
 | [#3 マスタ](https://github.com/shikodecom/share-toku/issues/3) | `MasterController`, `Category`, `Service`, `ReferralProgram`, `Publishability` | `DeletedMasterTest` 削除後の画面・審査・配信 | 実装済み。CRUD 全経路、slug 重複、権限・policy の専用テスト不足 |
 | [#4 特典 CRUD](https://github.com/shikodecom/share-toku/issues/4) | `OfferController`, `ReferralOffer`, `OfferContent` | `ShareTokuFlowTest`, `ReviewFlowTest`, `DeletedMasterTest` | 実装済み。CRUD・期間・URL 入力の全条件を網羅する専用テスト不足 |
 | [#5 審査・停止](https://github.com/shikodecom/share-toku/issues/5) | `ReviewController`, `ReviewRequest`, `Audit`, `offers:expire` | `ReviewFlowTest`, `DeletedMasterTest` | 実装済み。却下・不正遷移・ロール・policy 全ケースの検証不足 |
@@ -44,4 +44,4 @@ Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` 
 - Homebrew Node の共有ライブラリ欠落があるため、JS checks は bundled Node を使用。システム環境の変更は行っていません。
 - MySQL と WP 実機の新しい E2E を行ったという記録ではありません。
 
-Issue [#19](https://github.com/shikodecom/share-toku/issues/19): SocialiteによるGoogle OAuth、Google IDでの識別、プロフィール同期、Personal Workspace作成、state検証、旧認証route撤去を実装。password列はNULL許容で保持し、password_reset_tokensも後方互換のため残します。本番ブラウザー検証はrelease checklistで別途記録します。
+Issue [#19](https://github.com/shikodecom/share-toku/issues/19): SocialiteによるGoogle OAuth、Google IDでの識別、プロフィール同期、Personal Workspace作成、state検証、旧認証route撤去を実装。password列はNULL許容で保持し、password_reset_tokensも後方互換のため残します。本番通常ログインフローは検証済み。記録はrelease checklistを参照。一般公開は#15、未使用DBの削除は#21で管理します。

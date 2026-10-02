@@ -13,7 +13,7 @@ Settings → Environments に `production` を作り、Deployment branchesを `m
 | `PRODUCTION_USER` | SSHユーザー |
 | `PRODUCTION_SSH_KEY` | SSH秘密鍵。公開鍵をサーバーに登録 |
 | `PRODUCTION_SSH_KNOWN_HOSTS` | 確認済みSSHホスト鍵のknown_hosts行。非標準ポートは `[host]:port` 形式 |
-| `PRODUCTION_DEPLOY_PATH` | 非公開領域の専用絶対パス。例 `/home/f-taniguchi/apps/share-toku` |
+| `PRODUCTION_DEPLOY_PATH` | 本体の専用絶対パス。公開範囲はpublicのみ。例 `/home/f-taniguchi/www/shikode/share-toku` |
 
 Environment variable `PRODUCTION_PHP_BIN` に、サーバーのPHP 8.3以上のCLI実行パスを指定できます。省略時は `php` です。パスは英数字、`_`、`.`、`/`、`-`のみで、空白や `..` を含めません。
 
@@ -23,16 +23,16 @@ Environment variable `PRODUCTION_PHP_BIN` に、サーバーのPHP 8.3以上のC
 
 PHP 8.3以上（CLIとWeb両方）、intl、mbstring、PDO MySQL、MySQL 8以上、bash、tar、curl（`--retry-all-errors`対応）、SSH/SCP、シンボリックリンクが必要です。ComposerはGitHub runnerで実行するためサーバーへのインストールは不要です。
 
-設置先を以下の構成にします。リリース全体を公開領域へ置かず、サブドメインの公開先は **`current/public` のみ** に設定します。本番公開ディレクトリ `/home/f-taniguchi/www/shikode/share-toku` は `/home/f-taniguchi/apps/share-toku/current/public` へのシンボリックリンクにします。さくらの公開先指定がwww配下に限定される場合、専用公開ディレクトリから `current/public` へのシンボリックリンクを設定し、Apacheがそのリンクを辿れることを確認してください。既存サイトのディレクトリには配置しません。
-
+本体の設置先は `/home/f-taniguchi/www/shikode/share-toku`、さくら側の公開フォルダは `/shikode/share-toku/public` です。`public` は `current/public` を参照するシンボリックリンクで、公開URLは変わりません。他のドメインから本体ディレクトリが公開されないことも確認してください。
 ```text
-/home/f-taniguchi/apps/share-toku/
+/home/f-taniguchi/www/shikode/share-toku/
   shared/
     .env         # サーバーで用意する本番設定
     storage/     # CDが作成・引き継ぎ
   incoming/      # 一時アップロード
   releases/      # コミットごとのコードとvendor
   current -> releases/<release-id>
+  public -> current/public    # さくらの公開フォルダ
 ```
 
 1. `shared/.env` を `.env.example` に基づいて作成し、`APP_ENV=production`、`APP_DEBUG=false`、`APP_URL=https://share-toku.shikode.com`、`SESSION_SECURE_COOKIE=true`、本番DB・メール設定を保存します。`APP_KEY` は初回に生成して以後保持します。`SHARETOKU_OPERATOR_OFFERS_ENABLED=false` は公開チェック完了まで維持します。

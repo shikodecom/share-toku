@@ -9,6 +9,20 @@ php_bin=${3:-php}
 [[ "$release_id" =~ ^[a-f0-9]{40}-[0-9]+-[0-9]+$ ]]
 
 mkdir -p "$deploy_root/releases" "$deploy_root/shared"
+# Other domains may serve the parent www directory. Expose only public there too.
+if [[ ! -f "$deploy_root/.htaccess" ]]; then
+  cat > "$deploy_root/.htaccess" <<'HTACCESS'
+RewriteEngine On
+RewriteRule ^(?!public(?:/|$)) - [F,L]
+HTACCESS
+fi
+if [[ ! -e "$deploy_root/public" && ! -L "$deploy_root/public" ]]; then
+  ln -s "$deploy_root/current/public" "$deploy_root/public"
+fi
+[[ -L "$deploy_root/public" && "$(readlink "$deploy_root/public")" == "$deploy_root/current/public" ]] || {
+  echo 'The public path must point to current/public.' >&2
+  exit 1
+}
 mkdir "$deploy_root/.deploy.lock" || { echo 'Another deployment is running.' >&2; exit 1; }
 trap 'rmdir "$deploy_root/.deploy.lock"' EXIT
 

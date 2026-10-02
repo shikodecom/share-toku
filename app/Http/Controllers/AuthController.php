@@ -5,56 +5,92 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\WorkspaceMember;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
+use Throwable;
 
 class AuthController extends Controller
 {
-    public function registerForm()
-    {
-        return view('auth-form', ['mode' => 'register']);
-    }
+    private const FAILURE = 'Googleログインに失敗しました。もう一度お試しください。';
+
+    private const CONFLICT = 'アカウント情報が競合しています。管理者へお問い合わせください。';
 
     public function loginForm()
     {
-        return view('auth-form', ['mode' => 'login']);
+        return Auth::check() ? redirect('/dashboard') : view('login');
     }
 
-    public function register(Request $request)
+    public function googleRedirect()
     {
-        $data = $request->validate(['name' => 'required|string|max:100', 'email' => 'required|email|max:255|unique:users,email', 'password' => 'required|string|min:12|confirmed']);
-        $user = DB::transaction(function () use ($data) {
-            $user = User::create($data);
-            $workspace = Workspace::create(['public_id' => (string) Str::ulid(), 'name' => $user->name.' のWorkspace', 'type' => 'personal', 'owner_user_id' => $user->id]);
-            WorkspaceMember::create(['workspace_id' => $workspace->id, 'user_id' => $user->id, 'role' => 'administrator']);
+        return Socialite::driver('google')->redirect();
+    }
 
-            return $user;
-        });
+    public function googleCallback(Request $request)
+    {
+        if ($request->query->has('error')) {
+            return redirect('/login')->with('auth_error', $request->query('error') === 'access_denied'
+                ? 'Googleログインをキャンセルしました。' : self::FAILURE);
+        }
+
+        try {
+            $googleUser = Socialite::driver('google')->user();
+        } catch (InvalidStateException) {
+            return redirect('/login')->with('auth_error', 'Googleログインの確認に失敗しました。もう一度お試しください。');
+        } catch (Throwable $exception) {
+            Log::warning('Google login provider failed.', ['exception_class' => $exception::class]);
+
+            return redirect('/login')->with('auth_error', self::FAILURE);
+        }
+
+        $googleId = trim((string) $googleUser->getId());
+        $email = mb_strtolower(trim((string) $googleUser->getEmail()));
+        $name = trim((string) $googleUser->getName());
+        if ($googleId === '' || $email === '') {
+            return redirect('/login')->with('auth_error', self::FAILURE);
+        }
+        if ($name === '') {
+            $name = Str::before($email, '@');
+        }
+
+        try {
+            $user = DB::transaction(function () use ($googleId, $email, $name): ?User {
+                $user = User::where('google_id', $googleId)->lockForUpdate()->first();
+                $conflict = User::where('email', $email)
+                    ->when($user !== null, fn ($query) => $query->where('id', '!=', $user->id))->exists();
+                if ($conflict) {
+                    return null;
+                }
+                if ($user !== null) {
+                    $user->update(['name' => $name, 'email' => $email, 'email_verified_at' => $user->email_verified_at ?? now()]);
+
+                    return $user;
+                }
+
+                $user = User::create(['name' => $name, 'email' => $email, 'google_id' => $googleId, 'email_verified_at' => now()]);
+                $workspace = Workspace::create(['public_id' => (string) Str::ulid(), 'name' => $user->name.' のWorkspace', 'type' => 'personal', 'owner_user_id' => $user->id]);
+                WorkspaceMember::create(['workspace_id' => $workspace->id, 'user_id' => $user->id, 'role' => 'administrator']);
+
+                return $user;
+            });
+        } catch (UniqueConstraintViolationException) {
+            // A concurrent callback may have claimed this Google ID or email.
+            return redirect('/login')->with('auth_error', self::CONFLICT);
+        }
+
+        if ($user === null) {
+            return redirect('/login')->with('auth_error', self::CONFLICT);
+        }
+
         Auth::login($user);
         $request->session()->regenerate();
 
-        if (! $request->expectsJson()) {
-            return redirect('/dashboard');
-        }
-
-        return response()->json(['user' => $user->only('name', 'email'), 'workspace' => $user->workspaces()->first()->only('public_id', 'name')], 201);
-    }
-
-    public function login(Request $request)
-    {
-        $credentials = $request->validate(['email' => 'required|email', 'password' => 'required|string']);
-        if (! Auth::attempt($credentials)) {
-            return response()->json(['error' => ['code' => 'invalid_credentials', 'message' => 'Invalid credentials.']], 422);
-        }
-        $request->session()->regenerate();
-
-        if (! $request->expectsJson()) {
-            return redirect('/dashboard');
-        }
-
-        return response()->json(['user' => Auth::user()->only('name', 'email')]);
+        return redirect()->intended('/dashboard');
     }
 
     public function logout(Request $request)
@@ -63,10 +99,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        if (! $request->expectsJson()) {
-            return redirect('/login');
-        }
-
-        return response()->noContent();
+        return redirect('/login');
     }
 }

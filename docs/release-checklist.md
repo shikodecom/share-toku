@@ -38,3 +38,19 @@ No live WordPress E2E run has been recorded. Scenarios A–F from Issue #15 are 
 - [CI run 36970161361](https://github.com/shikodecom/share-toku/actions/runs/36970161361) passed, including MySQL migration/rollback/re-migration, Laravel checks, WordPress build/tests, dependency audits, and secret scanning.
 - [Production deploy run 36970237730](https://github.com/shikodecom/share-toku/actions/runs/36970237730) passed. This proves deployment workflow success, not completion of the public release gate.
 - The source/Issue/PR mapping and remaining acceptance work are in [implementation-status.md](implementation-status.md).
+
+## Google OAuth (#19)
+
+自動検証と実Googleアカウントでのブラウザー確認は別に記録します。
+
+- [x] 自動テスト: 初回作成・再ログイン・プロフィール同期・email競合・キャンセル・provider/state失敗・intended redirect
+- [x] 自動テスト: login成功時のsession regenerate、logout時のsession invalidateとCSRF token regenerate
+- [x] SQLite / MySQL 8 migration → rollback → re-migrate（password=NULLのGoogleユーザーを含む）
+- [x] 本番: Google credentialsとcallback URI設定済み（shared/.env保存・config cache更新、Google側はテストモード）
+- [ ] 本番ブラウザー: Google OAuth live login、初回User / Personal Workspace / administrator作成
+- [ ] 本番ブラウザー: Socialite state検証、session regenerate、logout
+- [ ] 本番ブラウザー: 同一Googleアカウントで再ログインして重複がない
+
+2026-10-02 ローカル検証: PHPUnit 35 tests / 348 assertions、Pint、PHPStan、composer auditが成功。MySQL 8.0.46でpassword=NULLのUserを保持したmigration → rollback → re-migrate成功。CIと本番ブラウザー確認は未実施。
+
+PR用に認証変更のみを抽出した検証: PHPUnit 31 tests / 255 assertions、Pint、PHPStanが成功。上記35 testsの結果は公開ポータルの作業中変更を含む全体検証です。

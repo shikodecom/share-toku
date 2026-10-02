@@ -35,7 +35,7 @@ PHP 8.3以上（CLIとWeb両方）、intl、mbstring、PDO MySQL、MySQL 8以上
   public -> current/public    # さくらの公開フォルダ
 ```
 
-1. `shared/.env` を `.env.example` に基づいて作成し、`APP_ENV=production`、`APP_DEBUG=false`、`APP_URL=https://share-toku.shikode.com`、`SESSION_SECURE_COOKIE=true`、本番DB・メール設定を保存します。`APP_KEY` は初回に生成して以後保持します。`SHARETOKU_OPERATOR_OFFERS_ENABLED=false` は公開チェック完了まで維持します。
+1. `shared/.env` を `.env.example` に基づいて作成し、`APP_ENV=production`、`APP_DEBUG=false`、`APP_URL=https://share-toku.shikode.com`、`SESSION_SECURE_COOKIE=true`、本番DB・メール設定と `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`、`GOOGLE_REDIRECT_URI=/auth/google/callback` を保存します。Google Cloud ConsoleのOAuth Web Clientには、本番redirect URI `https://share-toku.shikode.com/auth/google/callback` とローカル用 `http://localhost:8000/auth/google/callback` を登録し、deploy前にcredentialsを設定してください。`APP_KEY` は初回に生成して以後保持します。`SHARETOKU_OPERATOR_OFFERS_ENABLED=false` は公開チェック完了まで維持します。
 2. `.env` は所有者だけが読み書きできる権限にし、WebのPHP実行ユーザーが読み取れることを確認します。`shared/storage` と各リリースの `bootstrap/cache` はWebのPHP実行ユーザーにも書き込み権限が必要です。
 3. 本番DBを作成し、初回以降は配信前にバックアップを取得します。CDは `php artisan migrate --force` で未実行マイグレーションを適用します。
 4. DNS、さくらのサブドメイン設定、TLS証明書を設定します。Apacheの `.htaccess` とシンボリックリンクを有効にします。TLSや公開先の設定が未完了だとヘルスチェックが失敗します。

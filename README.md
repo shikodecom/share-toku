@@ -4,6 +4,8 @@
 
 ShareToku は、紹介コード・紹介URL・紹介特典を一元管理し、自分のWebサイトやWordPressへ配信できる紹介特典SaaSです。
 
+本番公開予定URL：<https://share-toku.shikode.com>
+
 紹介プログラムを利用する人は、自分が保有している紹介コードや紹介URLを登録できます。  
 WordPressプラグインを利用すると、登録した紹介特典をブログやWebサイトの記事内へ簡単に表示できます。
 
@@ -277,3 +279,5 @@ composer audit
 WordPress プラグインは [`wordpress-plugin/sharetoku`](wordpress-plugin/sharetoku) にあります。`SHARETOKU_OPERATOR_WORKSPACE_PUBLIC_ID` は運営者 Workspace の public ID に設定します。配信全体を緊急停止するときは `SHARETOKU_OPERATOR_OFFERS_ENABLED=false` に設定してください。
 
 詳しい設計、運用、セキュリティは [`docs/`](docs) を参照してください。
+
+GitHub Actionsによる本番CDの設定は [本番デプロイ手順](docs/deployment.md) を参照してください。`main` のCI成功後、SSHで `https://share-toku.shikode.com` へ配信します。

@@ -57,10 +57,15 @@ Keep the public release gate unapproved until #26–#28 and the remaining accept
 - [x] 自動テスト: login成功時のsession regenerate、logout時のsession invalidateとCSRF token regenerate
 - [x] SQLite / MySQL 8 migration → rollback → re-migrate（password=NULLのGoogleユーザーを含む）
 - [x] 本番: Google credentialsとcallback URI設定済み（shared/.env保存・config cache更新、Google側はテストモード）
-- [ ] 本番ブラウザー: Google OAuth live login、初回User / Personal Workspace / administrator作成
-- [ ] 本番ブラウザー: Socialite state検証、session regenerate、logout
-- [ ] 本番ブラウザー: 同一Googleアカウントで再ログインして重複がない
+- [x] 本番ブラウザー: Google OAuth live login、初回User / Personal Workspace / administrator作成
+- [x] 本番ブラウザー: logout後に保護画面からloginへ戻る
+- [ ] 追加の本番検証: state改ざんの拒否・session ID再生成を独立して確認（自動テストは成功済み）
+- [x] 本番ブラウザー: 同一Googleアカウントで再ログインして重複がない
 
-2026-10-02 ローカル検証: PHPUnit 35 tests / 348 assertions、Pint、PHPStan、composer auditが成功。MySQL 8.0.46でpassword=NULLのUserを保持したmigration → rollback → re-migrate成功。CIと本番ブラウザー確認は未実施。
+2026-10-02 ローカル検証: PHPUnit 35 tests / 348 assertions、Pint、PHPStan、composer auditが成功。MySQL 8.0.46でpassword=NULLのUserを保持したmigration → rollback → re-migrate成功。この時点ではCIと本番ブラウザー確認は未実施（後述の本番確認で通常フローを検証済み）。
 
-PR用に認証変更のみを抽出した検証: PHPUnit 31 tests / 255 assertions、Pint、PHPStanが成功。上記35 testsの結果は公開ポータルの作業中変更を含む全体検証です。
+PR用に認証変更のみを抽出した検証: PHPUnit 31 tests / 256 assertions、Pint、PHPStanが成功。上記35 testsの結果は公開ポータルの作業中変更を含む全体検証です。
+
+2026-10-02 本番確認: PR #20をマージし、main CI 36980624335 / Deploy production 36980714305が成功。実Google初回ログイン → logout → 保護画面へのアクセス拒否 → 同一アカウント再ログインを確認。User / Personal Workspace / administratorメンバーは各0件から各1件となり、再ログイン後も各1件、User ID / Workspace IDも維持。state不一致とsession regenerateは自動テストで検証済み（本番ブラウザーでの独立したstate改ざん・session ID比較は未実施）。Google側はテストモード、一般公開は未承認。
+
+公開準備（#15）: Googleブランディング設定・必要なポリシーURL等を確認し、一般公開の承認後にOAuthテストモードを解除する。password列・password_reset_tokensの物理削除は[cleanup #21](https://github.com/shikodecom/share-toku/issues/21)で実施する。

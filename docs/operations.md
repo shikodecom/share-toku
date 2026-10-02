@@ -2,7 +2,11 @@
 
 ## Production configuration
 
-Use HTTPS for Laravel and WordPress. Set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` to the public HTTPS URL, `SESSION_SECURE_COOKIE=true`, and secure MySQL credentials. Store `APP_KEY`, DB credentials, and mail credentials in a secret manager. Configure `SHARETOKU_OPERATOR_WORKSPACE_PUBLIC_ID` after creating the operator Workspace. Keep `SHARETOKU_OPERATOR_OFFERS_ENABLED=false` until consent and release checks are complete.
+The planned production URL is `https://share-toku.shikode.com`. Point DNS for `share-toku.shikode.com` to the deployment host and provision a TLS certificate for that hostname before public release.
+
+GitHub Actions CD setup for SSH rental hosting is documented in [deployment.md](deployment.md).
+
+Use HTTPS for Laravel and WordPress. Set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://share-toku.shikode.com`, `SESSION_SECURE_COOKIE=true`, and secure MySQL credentials. Store `APP_KEY`, DB credentials, and mail credentials in a secret manager. Configure `SHARETOKU_OPERATOR_WORKSPACE_PUBLIC_ID` after creating the operator Workspace. Keep `SHARETOKU_OPERATOR_OFFERS_ENABLED=false` until consent and release checks are complete.
 
 Run `php artisan migrate --force` during deployment. Run Laravel's scheduler every minute, e.g. `* * * * * php /path/to/artisan schedule:run`. Monitor scheduler failures and API 5xx/429 rates. Review logs without logging raw bearer tokens, authorization codes, referral codes, or URL query strings.
 

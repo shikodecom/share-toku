@@ -6,7 +6,7 @@ Status: **not approved for public release**. This is a factual test record, not 
 | --- | --- | --- |
 | Threat model | Done | `docs/security-threat-model.md` |
 | Laravel integration tests | In progress | Local PHPUnit integration suite; expand authorization and full scenario coverage |
-| Static analysis / format / dependency audit | In progress | CI workflow added; first remote CI run pending |
+| Static analysis / format / dependency audit | Automated checks passed | main `a8b4367`: remote CI passed on 2026-10-02 (run 36970161361); broader scenario coverage remains pending |
 | Workspace crossing | Partial | Offer and distribution feature tests pass; audit every resource |
 | Auth, CSRF, XSS | Partial | Framework and plugin controls implemented; browser tests pending |
 | PKCE and Site Token | Partial | Automated exchange/replay/revoke tests pass; WordPress live callback pending |
@@ -15,10 +15,10 @@ Status: **not approved for public release**. This is a factual test record, not 
 | Emergency suspension and API outage | Partial | Query and cache rules implemented; live TTL test pending |
 | Analytics privacy and aggregation | Partial | Automated ingest/dedupe and late event reaggregation tests pass; scheduler and retention need environment check |
 | Operator global kill switch | Implemented | `SHARETOKU_OPERATOR_OFFERS_ENABLED` requires deployment verification |
-| Public portal | Outside requested sequence | Issue #14 is not implemented; #15 depends on it |
+| Public portal | Not implemented | Issue #14 is not implemented; #15 depends on it |
 | Terms/privacy/guidelines and reporting | Pending | Operator approved legal text and public publishing required |
 | Backup/restore and secret rotation | Pending | Procedure in `docs/operations.md`; perform and record drills |
-| Dependency findings | Partial | Local composer audit found 0 advisories; npm audit found 0 High/Critical after override and 6 Moderate findings for evaluation. Remote CI pending |
+| Dependency findings | Partial | Local composer audit found 0 advisories; npm audit found 0 High/Critical after override and 6 Moderate findings for evaluation. Remote CI passed (run 36970161361); Moderate findings still require evaluation |
 
 ## E2E results
 
@@ -26,8 +26,15 @@ No live WordPress E2E run has been recorded. Scenarios A–F from Issue #15 are 
 
 ## Unresolved risks
 
-1. Issue #14 is outside this requested sequence but required by Issue #15's public release gate.
+1. Issue #14 is unimplemented and required by Issue #15's public release gate.
 2. Live WordPress setup, callback domain, caching, accessibility, and mobile layout have not been verified.
 3. Legal copy, privacy disclosure, reporting route, backups, and restore drill require operator decisions and environment access.
 4. Six Moderate npm findings in the WordPress build toolchain remain. The built plugin ships compiled assets and does not ship `node_modules`; evaluate each finding before release.
-5. MySQL is not running in the local workspace, so the migrations have only been exercised with the test suite's in-memory SQLite database.
+5. MySQL 8 migration, rollback, and re-migration passed in remote CI after PR #17. Application feature tests still run on SQLite; full MySQL + WordPress E2E remains pending.
+
+## Deployment evidence (2026-10-02, JST)
+
+- PR #16 (production CD) and PR #17 (MySQL index correction) are merged into main `a8b4367`.
+- [CI run 36970161361](https://github.com/shikodecom/share-toku/actions/runs/36970161361) passed, including MySQL migration/rollback/re-migration, Laravel checks, WordPress build/tests, dependency audits, and secret scanning.
+- [Production deploy run 36970237730](https://github.com/shikodecom/share-toku/actions/runs/36970237730) passed. This proves deployment workflow success, not completion of the public release gate.
+- The source/Issue/PR mapping and remaining acceptance work are in [implementation-status.md](implementation-status.md).

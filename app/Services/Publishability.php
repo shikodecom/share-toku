@@ -8,8 +8,11 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Publishability
 {
-    public function programAllowed(ReferralProgram $program, bool $external = false): bool
+    public function programAllowed(?ReferralProgram $program, bool $external = false): bool
     {
+        if (! $program || $program->trashed()) {
+            return false;
+        }
         $program->loadMissing('service');
         $policy = $external ? $program->external_distribution_policy : $program->public_listing_policy;
 

@@ -8,7 +8,7 @@ The repository is a modular Laravel monolith with a WordPress plugin in `wordpre
 - `users.is_system_admin` is separate from Workspace roles. A Workspace administrator cannot manage other Workspaces or system subscriptions.
 - Public resource IDs are ULIDs. Internal bigint keys are never used by distribution clients.
 - `Publishability` checks offer and program states and periods on every distribution query. The scheduler also marks expired offers, but distribution does not depend on the scheduler being on time.
-- Public listing policy and external distribution policy are separate fields. This request's issue list excludes the public portal (#14).
+- Public listing policy and external distribution policy are separate fields. The public portal (#14) remains unimplemented; see `docs/implementation-status.md` for the issue-to-source mapping.
 - `EntitlementService` is the single source for plan limits and operator eligibility. The Subscription row belongs to the Workspace.
 - Site Token is a 256 bit random bearer secret. Only its SHA-256 hash is stored in ShareToku. WordPress stores the raw token server side with autoload disabled.
 - `sites.domain` stores the normalized ASCII host (including IDN punycode). Pending registrations may share a host; exchange locks matching Site rows and refuses a second active connection.

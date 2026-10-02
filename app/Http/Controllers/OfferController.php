@@ -66,8 +66,8 @@ class OfferController extends Controller
 
     private function activeProgram(int $id): void
     {
-        $p = ReferralProgram::with('service')->findOrFail($id);
-        if (! $p->is_active || ! $p->service->is_active) {
+        $p = ReferralProgram::with('service')->find($id);
+        if (! $p || ! $p->is_active || ! $p->service?->is_active) {
             throw ValidationException::withMessages(['referral_program_id' => 'Program is inactive.']);
         }
     }

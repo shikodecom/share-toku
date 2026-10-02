@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
             'usage' => app(EntitlementService::class)->usage($workspace),
             'offers' => $workspace->offers()->with('program.service')->latest()->get(),
             'sites' => $workspace->sites()->with('consents')->latest()->get(),
-            'programs' => ReferralProgram::with('service')->where('is_active', true)->get(),
+            'programs' => ReferralProgram::with('service')->where('is_active', true)->whereHas('service', fn ($q) => $q->where('is_active', true))->get(),
             'categories' => Category::orderBy('sort_order')->get(),
             'exclusions' => DB::table('site_category_exclusions')->whereIn('site_id', $workspace->sites()->select('id'))->get()->groupBy('site_id'),
             'metrics' => DB::table('daily_metrics')->join('sites', 'sites.id', '=', 'daily_metrics.site_id')

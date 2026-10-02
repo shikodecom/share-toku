@@ -30,7 +30,17 @@ No live WordPress E2E run has been recorded. Scenarios A–F from Issue #15 are 
 2. Live WordPress setup, callback domain, caching, accessibility, and mobile layout have not been verified.
 3. Legal copy, privacy disclosure, reporting route, backups, and restore drill require operator decisions and environment access.
 4. Six Moderate npm findings in the WordPress build toolchain remain. The built plugin ships compiled assets and does not ship `node_modules`; evaluate each finding before release.
-5. MySQL 8 migration, rollback, and re-migration passed in remote CI after PR #17. Application feature tests still run on SQLite; full MySQL + WordPress E2E remains pending.
+5. MySQL 8 migration, rollback, and re-migration passed in remote CI after PR #17. This PR adds application tests to the MySQL CI job. Local MySQL application tests pass; live WordPress E2E remains pending.
+
+## Release preparation in progress (2026-10-02)
+
+- PR #30 fixes #23–#25; PR #31 implements the opt-in public portal (#14). Both require review and main integration. The portal row above describes the current main baseline.
+- [e2e-runbook.md](e2e-runbook.md): MySQL results and executable live WordPress scenarios for #26. Real WordPress and final clipboard paste remain pending.
+- [publication-preparation.md](publication-preparation.md): #27 source-mapped disclosures and required operator/contact inputs. No provisional legal text or OAuth publication change.
+- [operations-validation.md](operations-validation.md): #28 isolated MySQL restore with matching data, health and scoped API; expiration/retention/key tests. Production backup, cron, session rotation and reconnect remain pending.
+- This PR: SQLite / MySQL 8.0.46 each 34 tests / 278 assertions passed. PR #30: each 52 / 382. PR #31: each 38 / 370. These are separate branches, not a merged test count.
+
+Keep the public release gate unapproved until #26–#28 and the remaining acceptance checks are complete. Progress is tracked in #29.
 
 ## Deployment evidence (2026-10-02, JST)
 

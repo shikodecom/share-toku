@@ -53,6 +53,7 @@ jobs:
       - run: php -l wordpress-plugin/sharetoku/sharetoku.php
       - run: php -l wordpress-plugin/sharetoku/includes/class-sharetoku-plugin.php
       - run: php wordpress-plugin/sharetoku/tests/render.php
+      - run: php wordpress-plugin/sharetoku/tests/disconnect.php
       - run: git diff --check
       - uses: actions/setup-node@v4
         with:

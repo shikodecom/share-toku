@@ -80,7 +80,7 @@ class SiteConnectionController extends Controller
                 || ! hash_equals($record->redirect_uri, $data['redirect_uri'])) {
                 return response()->json(['error' => ['code' => 'invalid_grant', 'message' => 'Authorization code is invalid.']], 400);
             }
-            $site = Site::with('workspace')->find($record->site_id);
+            $site = Site::with('workspace')->lockForUpdate()->find($record->site_id);
             if (! $site || $site->status === 'suspended' || strtolower(parse_url($record->redirect_uri, PHP_URL_HOST) ?? '') !== $site->domain) {
                 return response()->json(['error' => ['code' => 'site_unavailable', 'message' => 'Site unavailable.']], 403);
             }

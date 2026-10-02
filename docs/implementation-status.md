@@ -1,6 +1,6 @@
 # Issue・PR・ソース対応表
 
-確認日: 2026-10-02（JST）。基準: main `a8b4367` と今回の修正。
+確認日: 2026-10-02（JST）。公開ポータルの基準: main `722241f` と本PR。下記の過去のCI・PR記録は当時の記録として保持。
 
 Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` で主要実装が main に直接入りましたが、受け入れ条件・必須テスト全件の完了記録がありません。コードが存在することと、全条件を検証済みであることを区別します。今回の見直しでは未確認条件を一括でチェックしたり、Issue を一括で閉じたりしません。
 
@@ -19,8 +19,16 @@ Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` 
 | [#11 Gutenberg](https://github.com/shikodecom/share-toku/issues/11) | `src/editor.js`, `src/block.json`, `build/`, plugin REST proxy | `tests/block.cjs`, remote CI build一致 | 実装済み。実 editor で検索→選択→保存→再編集、FREE/PRO preview 未検証 |
 | [#12 分析](https://github.com/shikodecom/share-toku/issues/12) | `AnalyticsController`, `EventToken`, `routes/console.php`, frontend JS | `ConnectionAndAnalyticsTest`, `tests/frontend.cjs` | 実装済み。期限・batch・時刻制限等の専用テスト、実 scheduler/retention 確認不足 |
 | [#13 プラン](https://github.com/shikodecom/share-toku/issues/13) | `EntitlementService`, `ManualSubscriptionManager`, `SubscriptionManager` | `EntitlementTest` FREE/PRO・Site上限・降格・audit | 実装済み。Offer 上限・期限切れ subscription の専用テスト不足 |
-| [#14 公開ポータル](https://github.com/shikodecom/share-toku/issues/14) | `/` は案内ページのみ。公開プロフィール・検索・公開特典ページなし | 対応テストなし | 未実装。公開/外部配信 policy の分離のみ先行実装 |
+| [#14 公開ポータル](https://github.com/shikodecom/share-toku/issues/14) | `PortalController`, `PortalQuery`, `WorkspacePublicProfile`, 公開view、プロフィール設定 | `PortalTest` 検索・カテゴリ・policy分離・期間・privacy・XSS・URL・安定順・公開撤回・role | 本PRで実装。SQLite / MySQL各38 tests / 370 assertions、ブラウザー検索・表示・コピー成功表示・公開撤回を確認。実WP等の総合検証は#26 |
 | [#15 公開判定](https://github.com/shikodecom/share-toku/issues/15) | `docs/security-threat-model.md`, `docs/operations.md`, `docs/release-checklist.md` | remote CI、部分的な統合テスト | 継続中。#14、WordPress E2E、規約・問い合わせ、backup/restore 等が未完了。一般公開未承認 |
+
+## 公開ポータルの検証（2026-10-02）
+
+本PRはローカル作業中だった#14の実装をmain `722241f`から独立させた。#19のGoogle認証は既にmain反映済みで、PR #22の本番検証記録変更は本PRに含めない。進行管理は#29。全体の一般公開承認は#15。
+
+SQLite / MySQL 8.0.46でPHPUnit各38 tests / 370 assertions、Pint、PHPStanが成功。ブラウザーで検索＋カテゴリ、Service / Offer / public profile、公開撤回後404、390pxの表示を確認した。コピー操作は「コピーしました」の表示と例外がないことを確認したが、in-app browserの仮想clipboardでは内容の貼り付け確認ができないため、実ブラウザーでの最終確認を#26に残す。
+
+2026-10-03のPR #31レビュー対応: Program名検索はPublishabilityのSQL公開条件を共用し、非公開policy・未開始・期限切れ・inactive・soft deleted Programを検索対象から除外。approved / restrictedと期間境界は許可する。Category filterはマスタに合わせmax:255。追加回帰テストを含むSQLite / MySQL各40 tests / 399 assertions、Pint、PHPStan成功。
 
 ## PR とコミットの関係
 

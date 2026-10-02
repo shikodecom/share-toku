@@ -34,15 +34,20 @@ class Publishability
 
     public function offers(bool $external = false): Builder
     {
-        $field = $external ? 'external_distribution_policy' : 'public_listing_policy';
-
         return ReferralOffer::query()->where('status', 'published')
             ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
             ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
-            ->whereHas('program', fn ($q) => $q->where('is_active', true)->whereIn($field, ['approved', 'restricted'])
-                ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
-                ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
-                ->whereHas('service', fn ($q) => $q->where('is_active', true)))
+            ->whereHas('program', fn ($q) => $this->constrainPrograms($q, $external))
             ->with('program.service.categories');
+    }
+
+    public function constrainPrograms(Builder $query, bool $external = false): Builder
+    {
+        $field = $external ? 'external_distribution_policy' : 'public_listing_policy';
+
+        return $query->where('is_active', true)->whereIn($field, ['approved', 'restricted'])
+            ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
+            ->whereHas('service', fn ($q) => $q->where('is_active', true));
     }
 }

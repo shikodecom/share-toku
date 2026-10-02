@@ -32,7 +32,7 @@ ShareToku では、紹介特典の情報をSaaS側に一元化します。
           WordPress
 ```
 
-ShareToku上で情報を更新すれば、接続されたWebサイトにも更新内容を配信できます。公開ポータルは構想段階で、この実装には含まれません。
+ShareToku上で情報を更新すれば、接続されたWebサイトにも更新内容を配信できます。公開ポータルでは掲載可能な紹介特典を検索・閲覧できます。
 
 ## FREEプランの基本モデル
 
@@ -69,14 +69,16 @@ PROプランでは運営者枠を非表示にします。決済連携は未実�
 
 ### 公開ポータル
 
-将来、ShareToku上でも公開可能な紹介特典を検索できるようにする構想です。公開ポータルは未実装です。
+公開ポータルは `/`、`/services`、`/services/{slug}`、`/categories/{slug}`、`/offers/{publicId}`、`/u/{publicSlug}` を提供します。
+
+管理画面の「公開プロフィール設定」で表示名と公開URLを設定し、公開を許可すると掲載可能な特典が表示されます。既存Workspaceは初期状態では非掲載です。WordPress配信の可否とは別に判定します。導入時は `php artisan migrate` で公開プロフィールのテーブルを追加してください。
 
 想定する検索軸：
 
 - サービス
 - カテゴリ
-- 特典内容
-- キーワード
+- 紹介制度名
+- サービス説明のキーワード
 
 ### WordPress連携
 
@@ -251,7 +253,7 @@ MVPでは以下を実装します。
 
 ## Status
 
-🚧 **MVP 実装中。一般公開は未承認です。** 本番配信済みですが、公開ポータルと公開前検証は未完了です。Issue・PRとソースの対応は [実装対応表](docs/implementation-status.md) を参照してください。 公開判定の残作業は [release checklist](docs/release-checklist.md) を参照してください。
+🚧 **MVP 実装中。一般公開は未承認です。** 公開ポータルを実装済みですが、公開前の総合検証は未完了です。Issue・PRとソースの対応は [実装対応表](docs/implementation-status.md) を参照してください。 公開判定の残作業は [release checklist](docs/release-checklist.md) を参照してください。
 
 ## ローカル起動
 

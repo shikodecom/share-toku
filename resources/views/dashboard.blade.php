@@ -1,7 +1,7 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="csrf-token" content="{{ csrf_token() }}"><title>ダッシュボード | ShareToku</title>
 <style>body{font:16px system-ui;max-width:76rem;margin:auto;padding:1.5rem;color:#17212b}header{display:flex;justify-content:space-between;align-items:center}section{border-top:1px solid #d8dfe7;padding:1.5rem 0}form{margin:.7rem 0}label{display:inline-grid;gap:.2rem;margin:.3rem}.row{display:flex;flex-wrap:wrap;align-items:end;gap:.4rem}input,select,textarea,button{font:inherit;padding:.45rem}textarea{min-width:22rem}button{cursor:pointer}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #e0e4e9;text-align:left;padding:.55rem}.muted{color:#526070}.error{color:#a32323}a{color:#17599a}</style></head><body>
-<header><div><h1>ShareToku</h1><p>{{ $workspace->name }} · {{ $usage['plan'] }} · Site {{ $usage['sites'] }}/{{ $usage['max_sites'] }} · Offer {{ $usage['offers'] }}/{{ $usage['max_offers'] }}</p></div>
+<header><div><p><a href="/workspaces/{{ $workspace->public_id }}/public-profile">公開プロフィール設定</a></p><h1>ShareToku</h1><p>{{ $workspace->name }} · {{ $usage['plan'] }} · Site {{ $usage['sites'] }}/{{ $usage['max_sites'] }} · Offer {{ $usage['offers'] }}/{{ $usage['max_offers'] }}</p></div>
 <form method="post" action="/logout">@csrf<button>ログアウト</button></form></header>
 <div id="result" role="status" aria-live="polite"></div>
 

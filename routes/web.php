@@ -25,11 +25,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json(['status' => 'ok']));
 Route::get('/', fn () => view('home'));
-Route::get('/register', [AuthController::class, 'registerForm']);
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
-Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
+Route::get('/auth/google/redirect', [AuthController::class, 'googleRedirect'])->name('auth.google.redirect')->middleware('throttle:10,1');
+Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])->name('auth.google.callback')->middleware('throttle:20,1');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function (Request $request) {

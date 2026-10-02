@@ -232,7 +232,7 @@ suspended
 
 MVPでは以下を実装します。
 
-- ユーザー登録・ログイン
+- Googleログイン
 - Workspace
 - サービスマスタ
 - 紹介特典CRUD
@@ -265,7 +265,9 @@ php artisan migrate
 php artisan serve
 ```
 
-`GET /health` は `{"status":"ok"}` を返します。ブラウザーで `/register` からユーザー登録すると個人 Workspace が作成され、`/dashboard` で紹介特典と Site を管理できます。最初の system admin は信頼できる運用者が `php artisan tinker` で対象 User の `is_system_admin` を明示的に設定してください。公開登録から system admin に昇格する経路はありません。
+`GET /health` は `{"status":"ok"}` を返します。ブラウザーで `/login` からGoogleログインすると個人 Workspace が作成され、`/dashboard` で紹介特典と Site を管理できます。最初の system admin はGoogleログイン後、信頼できる運用者が `php artisan tinker` で対象 User の `is_system_admin` を明示的に設定してください。公開登録から system admin に昇格する経路はありません。
+
+Google Cloud ConsoleでOAuth Client（Web application）を作成し、Authorized redirect URIsに `http://localhost:8000/auth/google/callback` を登録します。`.env` に `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`、`GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback` を設定してください。追加のGoogle API権限は要求せず、OAuth tokenも保存しません。クライアントシークレットはGitへ登録しないでください。
 
 開発テストは SQLite in-memory を利用します。
 

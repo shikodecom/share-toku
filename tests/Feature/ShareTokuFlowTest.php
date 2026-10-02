@@ -42,14 +42,14 @@ class ShareTokuFlowTest extends TestCase
             'referral_code' => 'CODE', 'status' => $status, 'created_by_user_id' => $user->id]);
     }
 
-    public function test_health_and_registration_workspace(): void
+    public function test_health_and_authenticated_dashboard(): void
     {
         $this->getJson('/health')->assertOk()->assertExactJson(['status' => 'ok']);
         config(['app.debug' => false]);
         $this->getJson('/api/v1/missing')->assertNotFound()->assertDontSee('trace');
-        $this->postJson('/register', ['name' => 'A', 'email' => 'a@example.com', 'password' => 'secret-password', 'password_confirmation' => 'secret-password'])
-            ->assertCreated()->assertJsonPath('workspace.name', 'A のWorkspace');
-        $this->assertDatabaseHas('workspace_members', ['role' => 'administrator']);
+        $user = User::factory()->create();
+        $this->workspace($user);
+        $this->actingAs($user);
         $this->get('/dashboard')->assertOk()->assertSee('Workspace');
     }
 

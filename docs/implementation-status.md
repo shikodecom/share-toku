@@ -22,6 +22,12 @@ Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` 
 | [#14 公開ポータル](https://github.com/shikodecom/share-toku/issues/14) | `PortalController`, `PortalQuery`, `WorkspacePublicProfile`, 公開view、プロフィール設定 | `PortalTest` 検索・カテゴリ・policy分離・期間・privacy・XSS・URL・安定順・公開撤回・role | 本PRで実装。SQLite / MySQL各38 tests / 370 assertions、ブラウザー検索・表示・コピー成功表示・公開撤回を確認。実WP等の総合検証は#26 |
 | [#15 公開判定](https://github.com/shikodecom/share-toku/issues/15) | `docs/security-threat-model.md`, `docs/operations.md`, `docs/release-checklist.md` | remote CI、部分的な統合テスト | 継続中。#14、WordPress E2E、規約・問い合わせ、backup/restore 等が未完了。一般公開未承認 |
 
+## 公開ポータルの検証（2026-10-02）
+
+本PRはローカル作業中だった#14の実装をmain `722241f`から独立させた。#19のGoogle認証は既にmain反映済みで、PR #22の本番検証記録変更は本PRに含めない。進行管理は#29。全体の一般公開承認は#15。
+
+SQLite / MySQL 8.0.46でPHPUnit各38 tests / 370 assertions、Pint、PHPStanが成功。ブラウザーで検索＋カテゴリ、Service / Offer / public profile、公開撤回後404、390pxの表示を確認した。コピー操作は「コピーしました」の表示と例外がないことを確認したが、in-app browserの仮想clipboardでは内容の貼り付け確認ができないため、実ブラウザーでの最終確認を#26に残す。
+
 ## PR とコミットの関係
 
 - `93fff58`: #1〜#13 の主要実装と #15 の一部資料を直接追加。対応する機能 PR はありません。
@@ -45,9 +51,3 @@ Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` 
 - MySQL と WP 実機の新しい E2E を行ったという記録ではありません。
 
 Issue [#19](https://github.com/shikodecom/share-toku/issues/19): SocialiteによるGoogle OAuth、Google IDでの識別、プロフィール同期、Personal Workspace作成、state検証、旧認証route撤去を実装。password列はNULL許容で保持し、password_reset_tokensも後方互換のため残します。本番ブラウザー検証はrelease checklistで別途記録します。
-
-## 公開ポータルの検証（2026-10-02）
-
-本PRはローカル作業中だった#14の実装をmain `722241f`から独立させた。#19のGoogle認証は既にmain反映済みで、PR #22の本番検証記録変更は本PRに含めない。進行管理は#29。全体の一般公開承認は#15。
-
-SQLite / MySQL 8.0.46でPHPUnit各38 tests / 370 assertions、Pint、PHPStanが成功。ブラウザーで検索＋カテゴリ、Service / Offer / public profile、公開撤回後404、390pxの表示を確認した。コピー操作は「コピーしました」の表示と例外がないことを確認したが、in-app browserの仮想clipboardでは内容の貼り付け確認ができないため、実ブラウザーでの最終確認を#26に残す。

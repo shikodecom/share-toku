@@ -21,9 +21,12 @@ class SiteConnectionController extends Controller
             'code_challenge_method' => 'required|in:S256']);
     }
 
-    private function site(Request $request, array $data, WorkspaceAccess $access): Site
+    private function site(Request $request, array $data, WorkspaceAccess $access, bool $lock = false): Site
     {
         $site = Site::with('workspace')->where('public_id', $data['site_public_id'])->firstOrFail();
+        if ($lock) {
+            $site = Site::with('workspace')->lockForUpdate()->findOrFail($site->id);
+        }
         $access->requireRole($request->user(), $site->workspace, ['administrator']);
         if ($site->status === 'suspended') {
             throw ValidationException::withMessages(['site' => 'Site is suspended.']);
@@ -59,14 +62,17 @@ class SiteConnectionController extends Controller
     public function authorizeSite(Request $request, WorkspaceAccess $access)
     {
         $data = $this->validateAuthorization($request);
-        $site = $this->site($request, $data, $access);
-        $rawCode = bin2hex(random_bytes(32));
-        SiteAuthorizationCode::create(['public_id' => (string) Str::ulid(), 'site_id' => $site->id, 'user_id' => $request->user()->id,
-            'code_hash' => hash('sha256', $rawCode), 'code_challenge' => $data['code_challenge'], 'redirect_uri' => $data['redirect_uri'],
-            'state_hash' => hash('sha256', $data['state']), 'expires_at' => now()->addMinutes(5), 'created_at' => now()]);
-        $separator = str_contains($data['redirect_uri'], '?') ? '&' : '?';
 
-        return redirect()->away($data['redirect_uri'].$separator.http_build_query(['code' => $rawCode, 'state' => $data['state']], '', '&', PHP_QUERY_RFC3986));
+        return DB::transaction(function () use ($request, $data, $access) {
+            $site = $this->site($request, $data, $access, true);
+            $rawCode = bin2hex(random_bytes(32));
+            SiteAuthorizationCode::create(['public_id' => (string) Str::ulid(), 'site_id' => $site->id, 'user_id' => $request->user()->id,
+                'code_hash' => hash('sha256', $rawCode), 'code_challenge' => $data['code_challenge'], 'redirect_uri' => $data['redirect_uri'],
+                'state_hash' => hash('sha256', $data['state']), 'expires_at' => now()->addMinutes(5), 'created_at' => now()]);
+            $separator = str_contains($data['redirect_uri'], '?') ? '&' : '?';
+
+            return redirect()->away($data['redirect_uri'].$separator.http_build_query(['code' => $rawCode, 'state' => $data['state']], '', '&', PHP_QUERY_RFC3986));
+        }, 3);
     }
 
     public function exchange(Request $request, EntitlementService $entitlements)
@@ -74,18 +80,37 @@ class SiteConnectionController extends Controller
         $data = $request->validate(['code' => 'required|string|size:64', 'code_verifier' => 'required|regex:/^[A-Za-z0-9._~-]{43,128}$/', 'redirect_uri' => 'required|url|max:2048']);
 
         return DB::transaction(function () use ($data, $entitlements) {
-            $record = SiteAuthorizationCode::where('code_hash', hash('sha256', $data['code']))->lockForUpdate()->first();
+            // Non-locking discovery only. Re-read the grant after all Site locks.
+            $hint = SiteAuthorizationCode::where('code_hash', hash('sha256', $data['code']))->first();
+            if (! $hint) {
+                return response()->json(['error' => ['code' => 'invalid_grant', 'message' => 'Authorization code is invalid.']], 400);
+            }
+            $siteHint = Site::find($hint->site_id);
+            if (! $siteHint) {
+                return response()->json(['error' => ['code' => 'site_unavailable', 'message' => 'Site unavailable.']], 403);
+            }
+            // Explicit primary-key reads guarantee acquisition order; ORDER BY on
+            // a domain query alone does not guarantee InnoDB's scan/lock order.
+            $ids = Site::where('domain', $siteHint->domain)->pluck('id')->push($siteHint->id)->unique()->sort();
+            $sameDomain = collect();
+            foreach ($ids as $id) {
+                $locked = Site::lockForUpdate()->find($id);
+                if ($locked) {
+                    $sameDomain->push($locked);
+                }
+            }
+            // All paths use Site (ascending ID) -> AuthorizationCode -> Token.
+            $record = SiteAuthorizationCode::whereKey($hint->id)->lockForUpdate()->first();
             $challenge = rtrim(strtr(base64_encode(hash('sha256', $data['code_verifier'], true)), '+/', '-_'), '=');
             if (! $record || $record->consumed_at || $record->expires_at->isPast() || ! hash_equals($record->code_challenge, $challenge)
                 || ! hash_equals($record->redirect_uri, $data['redirect_uri'])) {
                 return response()->json(['error' => ['code' => 'invalid_grant', 'message' => 'Authorization code is invalid.']], 400);
             }
-            $site = Site::with('workspace')->find($record->site_id);
+            $site = $sameDomain->firstWhere('id', $record->site_id);
             if (! $site || $site->status === 'suspended' || strtolower(parse_url($record->redirect_uri, PHP_URL_HOST) ?? '') !== $site->domain) {
                 return response()->json(['error' => ['code' => 'site_unavailable', 'message' => 'Site unavailable.']], 403);
             }
-            $sameDomain = Site::where('domain', $site->domain)->orderBy('id')->lockForUpdate()->get();
-            if ($sameDomain->contains(fn (Site $other) => $other->id !== $site->id && $other->status === 'active')) {
+            if ($sameDomain->contains(fn (Site $other) => $other->id !== $site->id && $other->domain === $site->domain && $other->status === 'active')) {
                 return response()->json(['error' => ['code' => 'domain_in_use', 'message' => 'Domain is already connected.']], 409);
             }
             $record->update(['consumed_at' => now()]);
@@ -96,7 +121,7 @@ class SiteConnectionController extends Controller
 
             return response()->json(['access_token' => $token, 'token_type' => 'Bearer', 'site' => ['public_id' => $site->public_id,
                 'domain' => $site->domain, 'plan' => $entitlements->plan($site->workspace)], 'scopes' => ['site:read', 'placements:read', 'events:write']]);
-        });
+        }, 3);
     }
 
     public function revoke(Request $request, string $workspace, string $site, WorkspaceAccess $access)

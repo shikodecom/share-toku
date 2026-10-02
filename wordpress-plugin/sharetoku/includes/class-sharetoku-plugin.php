@@ -186,11 +186,15 @@ final class ShareToku_Plugin
         if (self::token()) {
             $response = wp_remote_post(self::api_url().'/api/v1/site/disconnect', ['timeout' => 10,
                 'headers' => ['Authorization' => 'Bearer '.self::token()]]);
-            if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 204) {
-                wp_die('接続解除に失敗しました。ShareToku 側で Token を失効してから再試行してください。');
+            if (is_wp_error($response) || ! in_array(wp_remote_retrieve_response_code($response), [204, 401, 403], true)) {
+                wp_die('ShareToku に接続できないため、接続解除を確認できませんでした。通信状態を確認して再試行してください。');
             }
         }
         delete_option('sharetoku_site_token');
+        delete_transient('sharetoku_connect_'.get_current_user_id());
+        $settings = self::settings();
+        unset($settings['site_domain'], $settings['plan'], $settings['last_success']);
+        update_option(self::OPTION, $settings, false);
         self::clear_cache_internal();
         wp_safe_redirect(self::admin_url());
         exit;

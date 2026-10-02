@@ -9,6 +9,7 @@ use App\Services\Audit;
 use App\Services\EntitlementService;
 use App\Services\WorkspaceAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -41,25 +42,29 @@ class SiteController extends Controller
     {
         $w = $access->current($request->user(), $workspace);
         $access->requireRole($request->user(), $w, ['administrator']);
-        $s = $w->sites()->where('public_id', $site)->firstOrFail();
-        $data = $request->validate(['name' => 'sometimes|required|string|max:255', 'domain' => 'sometimes|required|string|max:253']);
-        if (isset($data['domain'])) {
-            $data['domain'] = $this->normalizeDomain($data['domain']);
-            if ($data['domain'] !== $s->domain) {
-                if (Site::where('domain', $data['domain'])->where('workspace_id', $w->id)->whereKeyNot($s->id)->exists()) {
-                    throw ValidationException::withMessages(['domain' => 'Domain is already registered.']);
-                }
-                $data['verified_at'] = null;
-                $data['status'] = 'pending';
-                $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
-                SiteAuthorizationCode::where('site_id', $s->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
-            }
-        }
-        $before = $s->only('name', 'domain', 'status');
-        $s->update($data);
-        $audit->record($request->user()->id, $w->id, $s, 'update', $before, $s->only('name', 'domain', 'status'));
 
-        return response()->json($s);
+        return DB::transaction(function () use ($request, $w, $site, $audit) {
+            $hint = $w->sites()->where('public_id', $site)->firstOrFail();
+            $s = Site::lockForUpdate()->findOrFail($hint->id);
+            $data = $request->validate(['name' => 'sometimes|required|string|max:255', 'domain' => 'sometimes|required|string|max:253']);
+            if (isset($data['domain'])) {
+                $data['domain'] = $this->normalizeDomain($data['domain']);
+                if ($data['domain'] !== $s->domain) {
+                    if (Site::where('domain', $data['domain'])->where('workspace_id', $w->id)->whereKeyNot($s->id)->exists()) {
+                        throw ValidationException::withMessages(['domain' => 'Domain is already registered.']);
+                    }
+                    $data['verified_at'] = null;
+                    $data['status'] = $s->status === 'suspended' ? 'suspended' : 'pending';
+                    SiteAuthorizationCode::where('site_id', $s->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
+                    $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
+                }
+            }
+            $before = $s->only('name', 'domain', 'status');
+            $s->update($data);
+            $audit->record($request->user()->id, $w->id, $s, 'update', $before, $s->only('name', 'domain', 'status'));
+
+            return response()->json($s);
+        }, 3);
     }
 
     public function consent(Request $request, string $workspace, string $site, WorkspaceAccess $access)
@@ -90,14 +95,18 @@ class SiteController extends Controller
     {
         $access->requireSystemAdmin($request->user());
         $request->validate(['reason' => 'required|string|max:2000']);
-        $s = Site::where('public_id', $site)->firstOrFail();
-        $before = $s->status;
-        $s->update(['status' => 'suspended']);
-        $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
-        SiteAuthorizationCode::where('site_id', $s->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
-        $audit->record($request->user()->id, $s->workspace_id, $s, 'suspend', ['status' => $before], ['status' => 'suspended']);
 
-        return response()->json(['status' => 'suspended']);
+        return DB::transaction(function () use ($request, $site, $audit) {
+            $hint = Site::where('public_id', $site)->firstOrFail();
+            $s = Site::lockForUpdate()->findOrFail($hint->id);
+            $before = $s->status;
+            $s->update(['status' => 'suspended']);
+            SiteAuthorizationCode::where('site_id', $s->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
+            $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
+            $audit->record($request->user()->id, $s->workspace_id, $s, 'suspend', ['status' => $before], ['status' => 'suspended']);
+
+            return response()->json(['status' => 'suspended']);
+        }, 3);
     }
 
     private function normalizeDomain(string $input): string

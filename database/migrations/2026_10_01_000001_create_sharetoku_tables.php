@@ -39,7 +39,7 @@ return new class extends Migration
             $t->string('provider_subscription_id')->nullable();
             $t->json('metadata_json')->nullable();
             $t->timestamps();
-            $t->index(['workspace_id', 'status', 'starts_at', 'ends_at']);
+            $t->index(['workspace_id', 'status', 'starts_at', 'ends_at'], 'workspace_subscriptions_active_index');
         });
         Schema::create('categories', function (Blueprint $t) {
             $t->id();

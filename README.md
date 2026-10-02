@@ -30,7 +30,7 @@ ShareToku では、紹介特典の情報をSaaS側に一元化します。
           WordPress
 ```
 
-ShareToku上で情報を更新すれば、接続されたWebサイトにも更新内容を配信できます。
+ShareToku上で情報を更新すれば、接続されたWebサイトにも更新内容を配信できます。公開ポータルは構想段階で、この実装には含まれません。
 
 ## FREEプランの基本モデル
 
@@ -49,7 +49,7 @@ FREEユーザーのWordPressでは、サイト所有者本人の紹介特典を�
 
 ことを基本ルールとします。
 
-PROプランでは運営者枠を非表示にできる予定です。
+PROプランでは運営者枠を非表示にします。決済連携は未実装で、プラン変更は管理者が行います。
 
 ## 主な機能
 
@@ -67,7 +67,7 @@ PROプランでは運営者枠を非表示にできる予定です。
 
 ### 公開ポータル
 
-ShareToku上でも公開可能な紹介特典を検索できます。
+将来、ShareToku上でも公開可能な紹介特典を検索できるようにする構想です。公開ポータルは未実装です。
 
 想定する検索軸：
 
@@ -84,7 +84,7 @@ ShareToku上でも公開可能な紹介特典を検索できます。
 [sharetoku offer="example-service"]
 ```
 
-記事内に紹介特典カードを表示します。将来的にはGutenbergブロックにも対応します。
+記事内に紹介特典カードを表示します。Gutenbergの動的ブロックにも対応します。
 
 ### 関連特典配信
 
@@ -130,29 +130,14 @@ WordPress側には紹介特典の正本を持たず、ShareTokuをSingle Source 
 
 ## API
 
-### Public API
-
-```text
-GET /api/v1/services
-GET /api/v1/offers
-GET /api/v1/offers/{id}
-GET /api/v1/categories
-```
-
-### Member API
-
-```text
-GET    /api/v1/me/offers
-POST   /api/v1/me/offers
-PATCH  /api/v1/me/offers/{id}
-GET    /api/v1/me/analytics
-```
+公開ポータル API は未実装です。会員向け操作はセッション認証の `/workspaces/{workspace}` 以下と `/master`、`/reviews`、`/admin` に配置しています。
 
 ### WordPress Distribution API
 
 ```text
 POST /api/v1/site-connections/exchange
 GET  /api/v1/site/me
+GET  /api/v1/site/offers
 POST /api/v1/placements/resolve
 POST /api/v1/events/batch
 ```
@@ -264,4 +249,31 @@ MVPでは以下を実装します。
 
 ## Status
 
-🚧 **Planning / Initial Development**
+🚧 **MVP 実装中。一般公開は未承認です。** 公開判定の残作業は [release checklist](docs/release-checklist.md) を参照してください。
+
+## ローカル起動
+
+PHP 8.3 以上（intl 拡張を含む）、Composer 2、MySQL 8 以上を用意します。MySQL に `sharetoku` データベースと専用ユーザーを作成し、接続情報を `.env` に設定します。
+
+```sh
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve
+```
+
+`GET /health` は `{"status":"ok"}` を返します。ブラウザーで `/register` からユーザー登録すると個人 Workspace が作成され、`/dashboard` で紹介特典と Site を管理できます。最初の system admin は信頼できる運用者が `php artisan tinker` で対象 User の `is_system_admin` を明示的に設定してください。公開登録から system admin に昇格する経路はありません。
+
+開発テストは SQLite in-memory を利用します。
+
+```sh
+php artisan test --compact --do-not-cache-result
+vendor/bin/pint --test
+php -d memory_limit=1G vendor/bin/phpstan analyse --no-progress
+composer audit
+```
+
+WordPress プラグインは [`wordpress-plugin/sharetoku`](wordpress-plugin/sharetoku) にあります。`SHARETOKU_OPERATOR_WORKSPACE_PUBLIC_ID` は運営者 Workspace の public ID に設定します。配信全体を緊急停止するときは `SHARETOKU_OPERATOR_OFFERS_ENABLED=false` に設定してください。
+
+詳しい設計、運用、セキュリティは [`docs/`](docs) を参照してください。

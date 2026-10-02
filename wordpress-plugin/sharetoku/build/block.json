@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "sharetoku/referral-offer",
+  "version": "0.1.0",
+  "title": "ShareToku 紹介特典",
+  "category": "widgets",
+  "icon": "megaphone",
+  "description": "ShareToku の紹介特典カードを表示します。",
+  "attributes": {
+    "offerId": {
+      "type": "string",
+      "default": ""
+    },
+    "placementKey": {
+      "type": "string",
+      "default": ""
+    },
+    "styleVariant": {
+      "type": "string",
+      "default": "default"
+    },
+    "showConditions": {
+      "type": "boolean",
+      "default": true
+    },
+    "showLastVerifiedAt": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "editorScript": "file:./editor.js"
+}

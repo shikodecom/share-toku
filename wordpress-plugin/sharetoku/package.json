@@ -1,0 +1,15 @@
+{
+  "name": "sharetoku-wordpress-plugin",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "wp-scripts build",
+    "check": "wp-scripts lint-js src/editor.js"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "*"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.5"
+  }
+}

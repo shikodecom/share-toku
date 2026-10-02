@@ -41,6 +41,8 @@ jobs:
           LOG_CHANNEL: 'null'
       - run: php artisan migrate:rollback --force
       - run: php artisan migrate --force
+      - name: Run application tests on MySQL
+        run: php artisan test --compact --do-not-cache-result
   laravel:
     runs-on: ubuntu-latest
     steps:

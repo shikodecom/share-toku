@@ -158,4 +158,43 @@ class PortalTest extends TestCase
         }
         $this->assertSame('Public Author', $offer->workspace->publicProfile->fresh()->display_name);
     }
+
+    public function test_program_name_search_uses_public_policy_and_current_period(): void
+    {
+        $this->freezeTime();
+        $offer = $this->fixture();
+        $program = $offer->program;
+        $program->update(['name' => 'HiddenNeedle']);
+        $path = '/services?q=HiddenNeedle';
+        foreach (['prohibited', 'suspended', 'needs_review'] as $policy) {
+            $program->update(['public_listing_policy' => $policy]);
+            $this->get($path)->assertOk()->assertDontSee('Example Service');
+        }
+        $program->update(['public_listing_policy' => 'approved']);
+        foreach (['starts_at' => now()->addSecond(), 'ends_at' => now()->subSecond(), 'is_active' => false] as $field => $value) {
+            $program->update([$field => $value]);
+            $this->get($path)->assertOk()->assertDontSee('Example Service');
+            $program->update([$field => $field === 'is_active' ? true : null]);
+        }
+        foreach (['approved', 'restricted'] as $policy) {
+            $program->update(['public_listing_policy' => $policy, 'starts_at' => now(), 'ends_at' => now()]);
+            $this->get($path)->assertOk()->assertSee('Example Service');
+        }
+        $program->delete();
+        $this->get($path)->assertOk()->assertDontSee('Example Service');
+        // Hiding the Program must not hide independently public Service text.
+        $this->get('/services?q=Example')->assertOk()->assertSee('Example Service');
+    }
+
+    public function test_category_filter_accepts_the_master_slug_length_limit(): void
+    {
+        $offer = $this->fixture();
+        $category = $offer->program->service->categories->first();
+        foreach ([100, 101, 255] as $length) {
+            $slug = str_repeat('a', $length);
+            $category->update(['slug' => $slug]);
+            $this->get('/services?category='.$slug)->assertOk()->assertSee('Example Service');
+        }
+        $this->getJson('/services?category='.str_repeat('a', 256))->assertUnprocessable()->assertJsonValidationErrors('category');
+    }
 }

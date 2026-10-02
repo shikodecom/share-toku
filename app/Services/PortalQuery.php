@@ -22,7 +22,7 @@ class PortalQuery
             $term = '%'.$search.'%';
             $query->where(fn ($q) => $q->where('name', 'like', $term)->orWhere('description', 'like', $term)
                 ->orWhereHas('categories', fn ($c) => $c->where('is_active', true)->where('name', 'like', $term))
-                ->orWhereHas('programs', fn ($p) => $p->where('is_active', true)->where('name', 'like', $term)));
+                ->orWhereHas('programs', fn ($p) => app(Publishability::class)->constrainPrograms($p)->where('name', 'like', $term)));
         }
         if ($category !== null && $category !== '') {
             $query->whereHas('categories', fn ($q) => $q->where('is_active', true)->where('slug', $category));

@@ -13,7 +13,7 @@ class PortalController extends Controller
 {
     public function index(Request $request, PortalQuery $query, ?string $categorySlug = null)
     {
-        $filters = $request->validate(['q' => 'nullable|string|max:200', 'category' => 'nullable|string|max:100']);
+        $filters = $request->validate(['q' => 'nullable|string|max:200', 'category' => 'nullable|string|max:255']);
         $category = $categorySlug ? Category::where('is_active', true)->where('slug', $categorySlug)->firstOrFail() : null;
 
         return view('portal.index', [

@@ -28,6 +28,8 @@ Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` 
 
 SQLite / MySQL 8.0.46でPHPUnit各38 tests / 370 assertions、Pint、PHPStanが成功。ブラウザーで検索＋カテゴリ、Service / Offer / public profile、公開撤回後404、390pxの表示を確認した。コピー操作は「コピーしました」の表示と例外がないことを確認したが、in-app browserの仮想clipboardでは内容の貼り付け確認ができないため、実ブラウザーでの最終確認を#26に残す。
 
+2026-10-03のPR #31レビュー対応: Program名検索はPublishabilityのSQL公開条件を共用し、非公開policy・未開始・期限切れ・inactive・soft deleted Programを検索対象から除外。approved / restrictedと期間境界は許可する。Category filterはマスタに合わせmax:255。追加回帰テストを含むSQLite / MySQL各40 tests / 399 assertions、Pint、PHPStan成功。
+
 ## PR とコミットの関係
 
 - `93fff58`: #1〜#13 の主要実装と #15 の一部資料を直接追加。対応する機能 PR はありません。

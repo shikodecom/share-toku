@@ -35,6 +35,12 @@ jobs:
       - run: php artisan migrate --force
       - run: php artisan migrate:rollback --force
       - run: php artisan migrate --force
+      - name: Verify concurrent Site authorization and exchange
+        run: php tests/mysql/site-concurrency.php
+        env:
+          APP_ENV: testing
+          CACHE_STORE: array
+          LOG_CHANNEL: 'null'
   laravel:
     runs-on: ubuntu-latest
     steps:

@@ -44,7 +44,8 @@ class SiteController extends Controller
         $access->requireRole($request->user(), $w, ['administrator']);
 
         return DB::transaction(function () use ($request, $w, $site, $audit) {
-            $s = $w->sites()->where('public_id', $site)->lockForUpdate()->firstOrFail();
+            $hint = $w->sites()->where('public_id', $site)->firstOrFail();
+            $s = Site::lockForUpdate()->findOrFail($hint->id);
             $data = $request->validate(['name' => 'sometimes|required|string|max:255', 'domain' => 'sometimes|required|string|max:253']);
             if (isset($data['domain'])) {
                 $data['domain'] = $this->normalizeDomain($data['domain']);
@@ -54,8 +55,8 @@ class SiteController extends Controller
                     }
                     $data['verified_at'] = null;
                     $data['status'] = $s->status === 'suspended' ? 'suspended' : 'pending';
-                    $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
                     SiteAuthorizationCode::where('site_id', $s->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
+                    $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
                 }
             }
             $before = $s->only('name', 'domain', 'status');
@@ -63,7 +64,7 @@ class SiteController extends Controller
             $audit->record($request->user()->id, $w->id, $s, 'update', $before, $s->only('name', 'domain', 'status'));
 
             return response()->json($s);
-        });
+        }, 3);
     }
 
     public function consent(Request $request, string $workspace, string $site, WorkspaceAccess $access)
@@ -96,15 +97,16 @@ class SiteController extends Controller
         $request->validate(['reason' => 'required|string|max:2000']);
 
         return DB::transaction(function () use ($request, $site, $audit) {
-            $s = Site::where('public_id', $site)->lockForUpdate()->firstOrFail();
+            $hint = Site::where('public_id', $site)->firstOrFail();
+            $s = Site::lockForUpdate()->findOrFail($hint->id);
             $before = $s->status;
             $s->update(['status' => 'suspended']);
-            $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
             SiteAuthorizationCode::where('site_id', $s->id)->whereNull('consumed_at')->update(['consumed_at' => now()]);
+            $s->tokens()->whereNull('revoked_at')->update(['revoked_at' => now()]);
             $audit->record($request->user()->id, $s->workspace_id, $s, 'suspend', ['status' => $before], ['status' => 'suspended']);
 
             return response()->json(['status' => 'suspended']);
-        });
+        }, 3);
     }
 
     private function normalizeDomain(string $input): string

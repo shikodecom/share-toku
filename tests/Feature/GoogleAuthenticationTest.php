@@ -44,9 +44,10 @@ class GoogleAuthenticationTest extends TestCase
 
     public function test_real_provider_uses_session_state_and_identity_scopes(): void
     {
-        config(['services.google.client_id' => 'test-client', 'services.google.client_secret' => 'test-secret']);
+        config(['services.google.client_id' => 'test-client', 'services.google.client_secret' => 'test-secret', 'services.google.redirect' => 'http://localhost:8000/auth/google/callback']);
         $response = $this->get('/auth/google/redirect')->assertRedirect();
         parse_str(parse_url($response->headers->get('Location'), PHP_URL_QUERY), $query);
+        $this->assertSame('http://localhost:8000/auth/google/callback', $query['redirect_uri']);
         $this->assertSame('code', $query['response_type']);
         $this->assertSame('openid profile email', $query['scope']);
         $this->assertSame(session('state'), $query['state']);

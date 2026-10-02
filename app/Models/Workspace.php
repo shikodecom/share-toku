@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Workspace extends Model
@@ -11,6 +12,11 @@ class Workspace extends Model
     use SoftDeletes;
 
     protected $fillable = ['public_id', 'name', 'type', 'owner_user_id'];
+
+    public function publicProfile(): HasOne
+    {
+        return $this->hasOne(WorkspacePublicProfile::class);
+    }
 
     public function members(): HasMany
     {

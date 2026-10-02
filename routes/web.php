@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\MatchingSettingsController;
 use App\Http\Controllers\OfferController;
+use App\Http\Controllers\PortalController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SiteConnectionController;
 use App\Http\Controllers\SiteController;
@@ -24,13 +26,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json(['status' => 'ok']));
-Route::get('/', fn () => view('home'));
+Route::get('/', [PortalController::class, 'index']);
+Route::get('/services', [PortalController::class, 'index']);
+Route::get('/services/{serviceSlug}', [PortalController::class, 'service']);
+Route::get('/categories/{categorySlug}', [PortalController::class, 'index']);
+Route::get('/offers/{offerPublicId}', [PortalController::class, 'offer']);
+Route::get('/u/{publicSlug}', [PortalController::class, 'profile']);
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
 Route::get('/auth/google/redirect', [AuthController::class, 'googleRedirect'])->name('auth.google.redirect')->middleware('throttle:10,1');
 Route::get('/auth/google/callback', [AuthController::class, 'googleCallback'])->name('auth.google.callback')->middleware('throttle:20,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/workspaces/{workspace}/public-profile', [PublicProfileController::class, 'edit']);
+    Route::put('/workspaces/{workspace}/public-profile', [PublicProfileController::class, 'update']);
     Route::get('/dashboard', function (Request $request) {
         $workspace = app(WorkspaceAccess::class)->current($request->user());
 

@@ -31,4 +31,4 @@ Record the old/new key transition and config-cache reload without including key 
 
 ## Validation records
 
-The isolated MySQL restore drill and command tests are recorded in [operations-validation.md](operations-validation.md). Production backup/cron verification remains pending. The live WordPress scenarios are in [e2e-runbook.md](e2e-runbook.md), and public policy inputs in [publication-preparation.md](publication-preparation.md).
+The isolated MySQL restore drill and command tests are recorded in [operations-validation.md](operations-validation.md). [Production inspection on 2026-10-03](production-readiness-2026-10-03.md) confirms minutely cron registration and effective configuration; scheduled execution, daily backups and production-data restore remain pending. Live WordPress results and limitations are in [wordpress-e2e-2026-10-03.md](wordpress-e2e-2026-10-03.md), scenarios in [e2e-runbook.md](e2e-runbook.md), and public policy inputs in [publication-preparation.md](publication-preparation.md).

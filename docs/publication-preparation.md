@@ -9,7 +9,7 @@
 | 公開する運営者名 | 未提供 | 利用規約・privacy・問い合わせ表示に用いる正式表記を決める |
 | 問い合わせ・通報先 | 未提供 | メールまたはフォームURLと対応担当を決める。通報にはOffer public ID / 公開URLを含められるようにする |
 | 文書の確認担当・適用日 | 未確定 | 規約・privacy・掲載ガイドライン・公開審査方針を運営者が確認する |
-| ログの保存期間・backup保管先 | 本番未確認 | #28で確認し、privacy文書と一致させる |
+| ログの保存期間・backup保管先 | 本番はsingleログ、raw analytics 90日。backupは初期構築ファイルのみ確認 | 日次backup・ログrotation・保持期間・失敗通知を#28で実証し、privacy文書と一致させる |
 | Googleの公開設定 | テストモード | 必要なブランディング・ドメイン・policy URLと最新の公式要件を確認する。#15の公開承認後に設定を変更する |
 
 未確定の連絡先や仮の規約を公開画面に載せない。
@@ -28,3 +28,11 @@
 公開URLを用意した後、login、ポータル、FREE同意画面から文書へ到達できることを実ブラウザーで検証する。Offer詳細から通報先へ対象を渡し、実際に運営者が受信・対応できることを確認する。フォームへToken・認可コード・秘密情報を含めない。
 
 Googleテストモード解除後の未登録アカウントによるログイン結果まで#27に記録し、#15で最終判定する。文書の法的な確認は運営者が行う。
+
+## Google公式要件の再確認（2026-10-03）
+
+公開用homepageではサービスの機能を説明し、termsとprivacyへのリンクを用意する。privacyはhomepageと同じドメインで公開し、Google側のアプリ名・support email・URLと一致させる。運営者名・連絡先の確定と文書確認後、`/terms`、`/privacy`、`/guidelines`、対象Offerを識別できる問い合わせ導線を実装・検証する。[OAuth policies](https://developers.google.com/identity/protocols/oauth2/policies)、[brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification)。
+
+appの公開状態、brandingの審査状態、要求scopeは別に記録する。External / Testingでも、basic identity scope（openid、email、profile）のみの場合はtest user allowlistの例外がある。未登録アカウントの成功だけでPublishedへ変更されたとは判定できない。公開時にアプリ名・ロゴを同意画面へ表示するためのbranding審査と、sensitive / restricted scopeの審査を混同しない。[OAuth app state overview](https://developers.google.com/identity/protocols/oauth2/production-readiness/overview)。
+
+Google管理画面の状態は今回変更していない。実際のscope / audience / branding / redirect URIの確認と、#15承認後の公開設定・未登録アカウントによる実ログインを記録する。

@@ -1,6 +1,14 @@
 # Issue・PR・ソース対応表
 
-確認日: 2026-10-02（JST）。公開ポータルの基準: main `722241f` と本PR。下記の過去のCI・PR記録は当時の記録として保持。
+最新確認日: 2026-10-03（JST）。現在の製品基準はmain `532a1003`。以下の2026-10-02の対応表とPRごとの検証数は当時の記録として保持する。
+
+## 現在地（2026-10-03）
+
+- PR #30 / #31 / #32はマージ済み。#23 / #24 / #25はCLOSED。main CI [37068762985](https://github.com/shikodecom/share-toku/actions/runs/37068762985)はSQLite / MySQL各64 tests / 547 assertions、MySQL並行4シナリオ成功。本番CD [37068858643](https://github.com/shikodecom/share-toku/actions/runs/37068858643)も成功。
+- #26: [実WordPress記録](wordpress-e2e-2026-10-03.md)。PKCE・再接続、8表示条件、kill switchと障害時TTL、実REST検索 / previewを確認。HTTPS・実Googleの全操作、Gutenberg保存・再編集、ブラウザー計測、コピー後貼り付けは未完了。
+- #27: [公開準備](publication-preparation.md)。Google公式要件とbasic identity scopeのTesting例外を確認。運営者名・問い合わせ先・文書確認を待って公開導線を実装する。公開設定は変更していない。
+- #28: [本番読み取り記録](production-readiness-2026-10-03.md)。安全な設定と毎分cron、3command登録を確認。日次暗号化backup・本番復元訓練・scheduler実績・ログ保存期間は未完了。operator Workspace未設定、枠OFF。
+- #14 / #15 / #26〜#29はOPEN。一般公開は未承認。
 
 Issue の OPEN は「未着手」を意味しません。#1〜#13 は `93fff58` で主要実装が main に直接入りましたが、受け入れ条件・必須テスト全件の完了記録がありません。コードが存在することと、全条件を検証済みであることを区別します。今回の見直しでは未確認条件を一括でチェックしたり、Issue を一括で閉じたりしません。
 

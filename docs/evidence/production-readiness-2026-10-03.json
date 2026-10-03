@@ -1,0 +1,65 @@
+{
+    "php_version": "8.3.32",
+    "app_env": "production",
+    "app_debug": false,
+    "app_url": "https://share-toku.shikode.com",
+    "secure_cookie": true,
+    "session_driver": "database",
+    "operator_offers_enabled": false,
+    "operator_workspace_configured": false,
+    "operator_workspace_exists": false,
+    "analytics_retention_days": 90,
+    "mysql_version": "8.0.42",
+    "cron_matching_entry_count": 1,
+    "cron_schedule_run_count": 1,
+    "cron_minutely_schedule_run_count": 1,
+    "registered_commands": [
+        {
+            "command": "offers:expire",
+            "expression": "0 * * * *",
+            "timezone": "UTC"
+        },
+        {
+            "command": "analytics:aggregate",
+            "expression": "0 1 * * *",
+            "timezone": "UTC"
+        },
+        {
+            "command": "analytics:prune",
+            "expression": "0 2 * * *",
+            "timezone": "UTC"
+        }
+    ],
+    "application_backup_directories": [
+        {
+            "directory_present": false,
+            "file_count": 0,
+            "newest_timestamp": null,
+            "files": []
+        },
+        {
+            "directory_present": true,
+            "file_count": 1,
+            "newest_timestamp": 1790919663,
+            "files": [
+                {
+                    "extension": "sql",
+                    "bytes": 6898,
+                    "mode": "600"
+                }
+            ]
+        },
+        {
+            "directory_present": false,
+            "file_count": 0,
+            "newest_timestamp": null,
+            "files": []
+        }
+    ],
+    "logging_default": "stack",
+    "logging_stack": [
+        "single"
+    ],
+    "logging_daily_days": null,
+    "env_owner_only": true
+}

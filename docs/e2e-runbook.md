@@ -2,6 +2,8 @@
 
 進行管理は#29、公開判定は#15。この手順の存在は実WordPressでの合格記録ではない。
 
+最新の実施記録: [実WordPress検証 2026-10-03](wordpress-e2e-2026-10-03.md)。main `532a1003`を使い、実WP / MySQL / Laravelで部分的なシナリオとPKCE再接続を確認した。HTTP隔離fixtureの結果をHTTPS・実Googleログイン・Gutenberg操作・ブラウザー計測の完了に読み替えない。
+
 ## 対象と準備
 
 - PR #30の不具合修正、PR #31の公開ポータルを含む対象commitを記録する。main反映後に最終確認する。
